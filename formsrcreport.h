@@ -1,22 +1,23 @@
-#ifndef FORMSRSREPORT_H
-#define FORMSRSREPORT_H
+#ifndef FORMSRCREPORT_H
+#define FORMSRCREPORT_H
 
 #include <QWidget>
 
 namespace Ui {
-class FormSrsReport;
+class FormSrcReport;
 }
 
-class FormSrsReport : public QWidget
+class FormSrcReport : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FormSrsReport(QWidget *parent = 0);
-    ~FormSrsReport();
+    explicit FormSrcReport(int id_report, QWidget *parent = 0);
+    ~FormSrcReport();
 
 private:
-    Ui::FormSrsReport *ui;
+    Ui::FormSrcReport *ui;
+    int id;
 };
 
-#endif // FORMSRSREPORT_H
+#endif // FORMSRCREPORT_H
