@@ -2,15 +2,12 @@
 
 Import1C::Import1C()
 {
-    QSqlQuery query;
-    query.prepare("select id, nam from econom_cost_type order by nam");
-    if (query.exec()){
-        while(query.next()){
-            costTypes.insert(query.value(1).toString(),query.value(0).toInt());
-        }
-    } else {
-        s_err=query.lastError().text();
-    }
+    refreshMap(&costTypes,"econom_cost_type");
+    refreshMap(&subdivs,"econom_subdiv");
+    refreshMap(&nomGroups,"econom_nom_group");
+    refreshMap(&prods,"econom_production");
+    refreshMap(&costs,"econom_cost");
+    refreshMap(&costItems,"econom_cost_item");
 }
 
 int Import1C::importFromFile(QString filename)
@@ -21,7 +18,8 @@ int Import1C::importFromFile(QString filename)
     int id_unload_it=-1;
     int id_type=-1;
     int id_cost=-1;
-    int id_unload_it_cost;
+    int id_unload_it_cost=-1;
+    s_name.clear();
     QFile file(filename);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
         QTextStream in(&file);
@@ -30,6 +28,7 @@ int Import1C::importFromFile(QString filename)
         DialogNewUnload d(in.readLine());
         if (d.exec()==QDialog::Accepted){
             id=addUnload(d.name(),d.begDate(),d.endDate());
+            s_name=d.name();
             if (id!=-1){
                 QProgressDialog *progress = new QProgressDialog();
                 progress->setWindowTitle(QString::fromUtf8("Загрузка данных"));
@@ -38,6 +37,7 @@ int Import1C::importFromFile(QString filename)
                 progress->setMinimumDuration(0);
                 progress->setMaximum(0);
                 progress->setValue(-1);
+                progress->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
 
                 while(!in.atEnd()){
                     QString str=in.readLine();
@@ -79,20 +79,20 @@ int Import1C::importFromFile(QString filename)
                             if (costTypes.contains(list.at(0))){
                                 qDebug()<<list<<" id="<<costTypes.value(list.at(0));
                                 id_type=costTypes.value(list.at(0));
-                            } else if (QString(list.at(1)).isEmpty() && QString(list.at(2)).isEmpty()){
-                                if (list.at(0)!=QString("Итого")){
-                                    qDebug()<<"ст. звтрат: "<<list;
-                                    id_cost=getIdCost(list.at(0));
-                                    double val=toDouble(list.at(3));
-                                    id_unload_it_cost=addUnloadItemCost(id_unload_it,id_cost,id_type,val);
-                                }
-                            } else {
-                                qDebug()<<"--эл: "<<list;
-                                int id_cost_item=getIdCostItem(list.at(0));
-                                double kvo=toDouble(list.at(1));
-                                double price=toDouble(list.at(2));
+                            } else if (QString(list.at(1)).isEmpty() && QString(list.at(2)).isEmpty() && costs.contains(list.at(0))){
+                                qDebug()<<"ст. звтрат: "<<list;
+                                id_cost=costs.value(list.at(0));
                                 double val=toDouble(list.at(3));
-                                addUnloadItemCostData(id_unload_it_cost,id_cost_item,kvo,price,val);
+                                id_unload_it_cost=addUnloadItemCost(id_unload_it,id_cost,id_type,val);
+                            } else {
+                                if (list.at(0)!=QString("Итого")){
+                                    qDebug()<<"--эл: "<<list;
+                                    int id_cost_item=getIdCostItem(list.at(0));
+                                    double kvo=toDouble(list.at(1));
+                                    double price=toDouble(list.at(2));
+                                    double val=toDouble(list.at(3));
+                                    addUnloadItemCostData(id_unload_it_cost,id_cost_item,kvo,price,val);
+                                }
                             }
                         }
                     }
@@ -114,6 +114,11 @@ int Import1C::importFromFile(QString filename)
 QString Import1C::lastError() const
 {
     return s_err;
+}
+
+QString Import1C::name() const
+{
+    return s_name;
 }
 
 QString Import1C::afterTab(QString s)
@@ -147,39 +152,27 @@ int Import1C::addUnload(QString name, QDate dBeg, QDate dEnd)
 int Import1C::getIdSubdiv(QString nam)
 {
     int id=-1;
-    QSqlQuery query;
-    query.prepare("select id from econom_subdiv where nam = :nam ");
-    query.bindValue(":nam",nam);
-    if (query.exec()){
-        if (query.size()){
-            while (query.next()){
-                id=query.value(0).toInt();
-            }
-        } else {
-            id=addNam("econom_subdiv",nam);
-        }
+    if (subdivs.contains(nam)){
+        id=subdivs.value(nam);
     } else {
-        s_err=query.lastError().text();
+        id=addNam("econom_subdiv",nam);
+        if (id!=-1){
+            subdivs.insert(nam,id);
+        }
     }
     return id;
 }
 
 int Import1C::getIdNomGroup(QString nam)
 {
-    int id=-1;
-    QSqlQuery query;
-    query.prepare("select id from econom_nom_group where nam = :nam ");
-    query.bindValue(":nam",nam);
-    if (query.exec()){
-        if (query.size()){
-            while (query.next()){
-                id=query.value(0).toInt();
-            }
-        } else {
-            id=addNam("econom_nom_group",nam);
-        }
+    int id=-1;   
+    if (nomGroups.contains(nam)){
+        id=nomGroups.value(nam);
     } else {
-        s_err=query.lastError().text();
+        id=addNam("econom_nom_group",nam);
+        if (id!=-1){
+            nomGroups.insert(nam,id);
+        }
     }
     return id;
 }
@@ -188,39 +181,13 @@ int Import1C::getIdNomGroup(QString nam)
 int Import1C::getIdProd(QString nam)
 {
     int id=-1;
-    QSqlQuery query;
-    query.prepare("select id from econom_production where nam = :nam ");
-    query.bindValue(":nam",nam);
-    if (query.exec()){
-        if (query.size()){
-            while (query.next()){
-                id=query.value(0).toInt();
-            }
-        } else {
-            id=addNam("econom_production", nam);
-        }
+    if (prods.contains(nam)){
+        id=prods.value(nam);
     } else {
-        s_err=query.lastError().text();
-    }
-    return id;
-}
-
-int Import1C::getIdCost(QString nam)
-{
-    int id=-1;
-    QSqlQuery query;
-    query.prepare("select id from econom_cost where nam = :nam ");
-    query.bindValue(":nam",nam);
-    if (query.exec()){
-        if (query.size()){
-            while (query.next()){
-                id=query.value(0).toInt();
-            }
-        } else {
-            id=addNam("econom_cost", nam);
+        id=addNam("econom_production",nam);
+        if (id!=-1){
+            prods.insert(nam,id);
         }
-    } else {
-        s_err=query.lastError().text();
     }
     return id;
 }
@@ -228,19 +195,13 @@ int Import1C::getIdCost(QString nam)
 int Import1C::getIdCostItem(QString nam)
 {
     int id=-1;
-    QSqlQuery query;
-    query.prepare("select id from econom_cost_item where nam = :nam ");
-    query.bindValue(":nam",nam);
-    if (query.exec()){
-        if (query.size()){
-            while (query.next()){
-                id=query.value(0).toInt();
-            }
-        } else {
-            id=addNam("econom_cost_item", nam);
-        }
+    if (costItems.contains(nam)){
+        id=costItems.value(nam);
     } else {
-        s_err=query.lastError().text();
+        id=addNam("econom_cost_item",nam);
+        if (id!=-1){
+            costItems.insert(nam,id);
+        }
     }
     return id;
 }
@@ -262,9 +223,27 @@ int Import1C::addNam(QString tablename, QString nam)
     return id;
 }
 
+bool Import1C::refreshMap(QMap<QString, int> *map, QString tablename)
+{
+    map->clear();
+    QSqlQuery query;
+    query.prepare("select id, nam from "+tablename+" order by nam");
+    bool ok=query.exec();
+    if (ok){
+        while(query.next()){
+            map->insert(query.value(1).toString(),query.value(0).toInt());
+        }
+    } else {
+        s_err=query.lastError().text();
+    }
+    return ok;
+}
+
 double Import1C::toDouble(QString n)
 {
     n=n.replace(",",".");
+    n=n.simplified();
+    n.replace(" ","");
     return n.toDouble();
 }
 

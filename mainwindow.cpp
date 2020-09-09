@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionImport,SIGNAL(triggered(bool)),this,SLOT(import()));
     connect(ui->actionExit,SIGNAL(triggered(bool)),QApplication::instance(),SLOT(quit()));
+    connect(ui->actionOpen,SIGNAL(triggered(bool)),this,SLOT(open()));
 
 }
 
@@ -64,7 +65,17 @@ void MainWindow::import()
             QMessageBox::critical(this,QObject::tr("Error"),im.lastError(),QMessageBox::Ok);
         }
         if (id_report!=-1){
-            newFormSrcReport(id_report);
+            FormSrcReport *r = newFormSrcReport(id_report);
+            r->setWindowTitle(im.name());
         }
+    }
+}
+
+void MainWindow::open()
+{
+    DialogOpen o;
+    if (o.exec()==QDialog::Accepted){
+        FormSrcReport *r = newFormSrcReport(o.id());
+        r->setWindowTitle(o.name());
     }
 }

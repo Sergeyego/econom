@@ -2,6 +2,7 @@
 #define FORMSRCREPORT_H
 
 #include <QWidget>
+#include "treemodel.h"
 
 namespace Ui {
 class FormSrcReport;
@@ -18,6 +19,7 @@ public:
 private:
     Ui::FormSrcReport *ui;
     int id;
+    TreeModel *srcModel;
 };
 
 #endif // FORMSRCREPORT_H

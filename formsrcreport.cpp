@@ -7,6 +7,8 @@ FormSrcReport::FormSrcReport(int id_report, QWidget *parent) :
 {
     ui->setupUi(this);
     id=id_report;
+    srcModel = new TreeModel(id,this);
+    ui->treeViewSrc->setModel(srcModel);
 }
 
 FormSrcReport::~FormSrcReport()

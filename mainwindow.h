@@ -6,6 +6,7 @@
 #include <QMdiSubWindow>
 #include "import1c.h"
 #include "formsrcreport.h"
+#include "dialogopen.h"
 #include <QFile>
 #include <QFileDialog>
 #include <QSettings>
@@ -30,6 +31,7 @@ private:
 
 private slots:
     void import();
+    void open();
 };
 
 #endif // MAINWINDOW_H
