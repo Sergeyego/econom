@@ -37,7 +37,6 @@ SOURCES += \
     db/dbviewer.cpp \
     dialognewunload.cpp \
     dialogopen.cpp \
-    treeitem.cpp \
     treemodel.cpp
 
 HEADERS += \
@@ -51,7 +50,6 @@ HEADERS += \
     db/dbviewer.h \
     dialognewunload.h \
     dialogopen.h \
-    treeitem.h \
     treemodel.h
 
 FORMS += \

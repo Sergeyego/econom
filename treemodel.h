@@ -4,17 +4,39 @@
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
+#include <QStringList>
 #include <QStyle>
-#include <QMessageBox>
+#include <QSqlQuery>
+#include <QDebug>
+#include <QSqlRecord>
 
-class TreeItem;
+class TreeItem
+{
+public:
+    TreeItem(const QList<QVariant> &data, TreeItem *parent = 0);
+    ~TreeItem();
+
+    void appendChild(TreeItem *child);
+
+    TreeItem *child(int row);
+    int childCount() const;
+    int columnCount() const;
+    QVariant data(int column) const;
+    int row() const;
+    TreeItem *parent();
+
+private:
+    QList<TreeItem*> childItems;
+    QList<QVariant> itemData;
+    TreeItem *parentItem;
+};
 
 class TreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 
 public:
-    TreeModel(int id, QObject *parent = 0);
+    TreeModel(QObject *parent = 0);
     ~TreeModel();
 
     QVariant data(const QModelIndex &index, int role) const;
@@ -26,9 +48,9 @@ public:
     QModelIndex parent(const QModelIndex &index) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    void refresh(QSqlQuery &query);
 
 private:
-    void setupModelData(int id, TreeItem *parent);
 
     TreeItem *rootItem;
 };

@@ -1,14 +1,60 @@
-#include <QtGui>
-#include "treeitem.h"
 #include "treemodel.h"
 
-TreeModel::TreeModel(int id, QObject *parent)
+TreeItem::TreeItem(const QList<QVariant> &data, TreeItem *parent)
+{
+    parentItem = parent;
+    itemData = data;
+}
+
+TreeItem::~TreeItem()
+{
+    qDeleteAll(childItems);
+}
+
+void TreeItem::appendChild(TreeItem *item)
+{
+    childItems.append(item);
+}
+
+TreeItem *TreeItem::child(int row)
+{
+    return childItems.value(row);
+}
+
+int TreeItem::childCount() const
+{
+    return childItems.count();
+}
+
+int TreeItem::columnCount() const
+{
+    return itemData.count();
+}
+
+QVariant TreeItem::data(int column) const
+{
+    return itemData.value(column);
+}
+
+TreeItem *TreeItem::parent()
+{
+    return parentItem;
+}
+
+int TreeItem::row() const
+{
+    if (parentItem)
+        return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
+
+    return 0;
+}
+
+TreeModel::TreeModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
     QList<QVariant> rootData;
-    rootData << tr("Затраты") << tr("Количество")<< tr("Цена")<< tr("Сумма");
+    rootData << QString("/");
     rootItem = new TreeItem(rootData);
-    setupModelData(id, rootItem);
 }
 
 TreeModel::~TreeModel()
@@ -24,18 +70,72 @@ int TreeModel::columnCount(const QModelIndex &parent) const
         return rootItem->columnCount();
 }
 
+void TreeModel::refresh(QSqlQuery &query)
+{
+    beginResetModel();
+    QList<QVariant> rootData;
+    rootData << QString("Затраты")<<QString("К-во вып.")<<QString("Себестоим.ед.")<<QString("К-во")<<QString("Цена")<<QString("Сумма");
+    if (rootItem){
+        delete rootItem;
+    }
+
+    rootItem = new TreeItem(rootData);
+
+    QList<TreeItem*> parents;
+    QList<int> indentations;
+    parents << rootItem;
+    indentations << 0;
+    QChar sep=QChar('&');
+
+    if (query.exec()){
+        while (query.next()) {
+            int position = 0;
+            QString lineData;
+            QStringList l = query.value(0).toString().split(sep);
+            if (l.last().isEmpty()){
+                position= (l.size()>1)? l.size()-2 : 0;
+                lineData=(l.size()>1)? l.at(l.size()-2) : QString();
+            } else {
+                position=l.size()-1;
+                lineData=l.at(l.size()-1);
+            }
+            if (!lineData.isEmpty()) {
+                QList<QVariant> columnData;
+                columnData.push_back(lineData);
+                for (int i=1;i<query.record().count();i++){
+                    columnData.push_back(query.value(i));
+                }
+                if (position > indentations.last()) {
+                    if (parents.last()->childCount() > 0) {
+                        parents << parents.last()->child(parents.last()->childCount()-1);
+                        indentations << position;
+                    }
+                } else {
+                    while (position < indentations.last() && parents.count() > 0) {
+                        parents.pop_back();
+                        indentations.pop_back();
+                    }
+                }
+                parents.last()->appendChild(new TreeItem(columnData, parents.last()));
+            }
+        }
+    }
+    endResetModel();
+}
+
 QVariant TreeModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    if (role==Qt::DecorationRole && index.column()==0){
-        return QIcon::fromTheme(QString::fromUtf8("folder"));
+
+    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
+
+    if (role==Qt::TextAlignmentRole && index.column()>0){
+        return int(Qt::AlignRight | Qt::AlignVCenter);
     }
 
     if (role != Qt::DisplayRole)
         return QVariant();
-
-    TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
 
     return item->data(index.column());
 }
@@ -105,73 +205,3 @@ int TreeModel::rowCount(const QModelIndex &parent) const
     return parentItem->childCount();
 }
 
-void TreeModel::setupModelData(int id, TreeItem *parent)
-{
-    QList<TreeItem*> parents;
-    QList<int> indentations;
-    parents << parent;
-    indentations << 0;
-
-    QMap <QString, QString> map;
-
-    /*MdbSQL *g_sql;
-    g_sql=mdb_sql_init();
-    mdb_sql_open(g_sql,fname.toLocal8Bit().data());
-    mdb_sql_run_query(g_sql,"select InternalCode, catCode, catName from Category");
-    QString err=QString::fromLocal8Bit(g_sql->error_msg);
-    if (!err.isEmpty()){
-        QMessageBox::critical(NULL,tr("Ошибка"),err,QMessageBox::Ok);
-    } else {
-        QString cod, cat,nam;
-        while (mdb_fetch_row(g_sql->cur_table)){
-            cod=QString::fromLocal8Bit((char*)g_sql->bound_values[0]);
-            cat=QString::fromLocal8Bit((char*)g_sql->bound_values[1]);
-            nam=QString::fromLocal8Bit((char*)g_sql->bound_values[2]);
-            map.insert(cod,cat+" "+nam+"\t"+cod);
-        }
-    }
-    //qDebug()<<map;
-
-    for (int j=0;j<g_sql->num_columns;j++) {
-        g_free(g_sql->bound_values[j]);
-    }
-    mdb_sql_reset(g_sql);
-    mdb_sql_exit(g_sql);*/
-
-    QMap<QString, QString>::const_iterator i = map.constBegin();
-    while (i != map.constEnd()) {
-        int position = 0;
-        if (i.key().contains(QChar('.'))){
-            position=i.key().split(QChar('.')).size();
-        }
-
-        QString lineData = i.value();
-
-        if (!lineData.isEmpty()) {
-            // Read the column data from the rest of the line.
-            QStringList columnStrings = lineData.split("\t", QString::SkipEmptyParts);
-            QList<QVariant> columnData;
-            for (int column = 0; column < columnStrings.count(); ++column)
-                columnData << columnStrings[column];
-
-            if (position > indentations.last()) {
-                // The last child of the current parent is now the new parent
-                // unless the current parent has no children.
-
-                if (parents.last()->childCount() > 0) {
-                    parents << parents.last()->child(parents.last()->childCount()-1);
-                    indentations << position;
-                }
-            } else {
-                while (position < indentations.last() && parents.count() > 0) {
-                    parents.pop_back();
-                    indentations.pop_back();
-                }
-            }
-
-            // Append a new item to the current parent's list of children.
-            parents.last()->appendChild(new TreeItem(columnData, parents.last()));
-        }
-        ++i;
-    }
-}
