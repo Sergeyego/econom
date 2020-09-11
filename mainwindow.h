@@ -30,8 +30,11 @@ private:
     FormSrcReport* newFormSrcReport(int id_report) const;
 
 private slots:
+    void mdiSubActivated(QMdiSubWindow *w);
     void import();
     void open();
+    void del();
+    void calc();
 };
 
 #endif // MAINWINDOW_H

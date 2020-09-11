@@ -36,6 +36,11 @@ QVariant TreeItem::data(int column) const
     return itemData.value(column);
 }
 
+void TreeItem::setData(int column, QVariant data)
+{
+    itemData[column]=data;
+}
+
 TreeItem *TreeItem::parent()
 {
     return parentItem;
@@ -74,7 +79,10 @@ void TreeModel::refresh(QSqlQuery &query)
 {
     beginResetModel();
     QList<QVariant> rootData;
-    rootData << QString("Затраты")<<QString("К-во вып.")<<QString("Себестоим.ед.")<<QString("К-во")<<QString("Цена")<<QString("Сумма");
+    for (int i=0; i<query.record().count(); i++){
+        rootData.push_back(query.record().fieldName(i));
+    }
+
     if (rootItem){
         delete rootItem;
     }
@@ -86,41 +94,49 @@ void TreeModel::refresh(QSqlQuery &query)
     parents << rootItem;
     indentations << 0;
     QChar sep=QChar('&');
-
-    if (query.exec()){
-        while (query.next()) {
-            int position = 0;
-            QString lineData;
-            QStringList l = query.value(0).toString().split(sep);
-            if (l.last().isEmpty()){
-                position= (l.size()>1)? l.size()-2 : 0;
-                lineData=(l.size()>1)? l.at(l.size()-2) : QString();
+    while (query.next()) {
+        int position = 0;
+        QString lineData;
+        QStringList l = query.value(0).toString().split(sep);
+        if (l.last().isEmpty()){
+            position= (l.size()>1)? l.size()-2 : 0;
+            lineData=(l.size()>1)? l.at(l.size()-2) : QString();
+        } else {
+            position=l.size()-1;
+            lineData=l.at(l.size()-1);
+        }
+        if (!lineData.isEmpty()) {
+            QList<QVariant> columnData;
+            columnData.push_back(lineData);
+            for (int i=1;i<query.record().count();i++){
+                columnData.push_back(query.value(i));
+            }
+            if (position > indentations.last()) {
+                if (parents.last()->childCount() > 0) {
+                    parents << parents.last()->child(parents.last()->childCount()-1);
+                    indentations << position;
+                }
             } else {
-                position=l.size()-1;
-                lineData=l.at(l.size()-1);
-            }
-            if (!lineData.isEmpty()) {
-                QList<QVariant> columnData;
-                columnData.push_back(lineData);
-                for (int i=1;i<query.record().count();i++){
-                    columnData.push_back(query.value(i));
+                while (position < indentations.last() && parents.count() > 0) {
+                    parents.pop_back();
+                    indentations.pop_back();
                 }
-                if (position > indentations.last()) {
-                    if (parents.last()->childCount() > 0) {
-                        parents << parents.last()->child(parents.last()->childCount()-1);
-                        indentations << position;
-                    }
-                } else {
-                    while (position < indentations.last() && parents.count() > 0) {
-                        parents.pop_back();
-                        indentations.pop_back();
-                    }
-                }
-                parents.last()->appendChild(new TreeItem(columnData, parents.last()));
             }
+            parents.last()->appendChild(new TreeItem(columnData, parents.last()));
         }
     }
     endResetModel();
+}
+
+bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
+{
+    bool ok=false;
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole){
+        ok=true;
+        rootItem->setData(section, value);
+        emit headerDataChanged(orientation,section,section);
+    }
+    return ok;
 }
 
 QVariant TreeModel::data(const QModelIndex &index, int role) const
@@ -129,15 +145,43 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-
-    if (role==Qt::TextAlignmentRole && index.column()>0){
-        return int(Qt::AlignRight | Qt::AlignVCenter);
+    QVariant orig=item->data(index.column());
+    QVariant::Type type=orig.type();
+    if (role==Qt::TextAlignmentRole){
+        return (type==QMetaType::Int || type==QMetaType::Double || type==QMetaType::Float || type==QMetaType::LongLong ) ?
+                int(Qt::AlignRight | Qt::AlignVCenter) : int(Qt::AlignLeft | Qt::AlignVCenter);
+    } else   if (role==Qt::DisplayRole){
+        if (type==QMetaType::Double){
+            return (orig.isNull()) ? QString("") : QLocale().toString(orig.toDouble(),'f',2);
+        } else if (type==QMetaType::QDate){
+            return (orig.isNull()) ? QString("") : orig.toDate().toString("dd.MM.yy");
+        } else {
+            return orig;
+        }
+    } else if (role==Qt::EditRole){
+        return orig;
+    } else if (role==Qt::BackgroundRole){
+        TreeItem *it=item;
+        int n=0;
+        QColor color(Qt::white);
+        while(it!=rootItem){
+            it=it->parent();
+            n++;
+        }
+        if (n==1){
+            color=QColor(180,190,170);
+        } else if (n==2){
+            color=QColor(200,210,190);
+        } else if (n==3){
+            color=QColor(214,229,203);
+        } else if (n==4){
+            color=QColor(227,239,220);
+        } else if (n==5){
+            color=QColor(240,246,239);
+        }
+        return color;
     }
-
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
-    return item->data(index.column());
+    return QVariant();
 }
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const

@@ -30,7 +30,8 @@ DialogOpen::~DialogOpen()
 
 int DialogOpen::id() const
 {
-    return currentData(0).toInt();
+    QVariant id=currentData(0);
+    return id.isNull()? -1 : id.toInt();
 }
 
 QString DialogOpen::name() const

@@ -18,13 +18,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionXlsx->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
     ui->mainToolBar->addAction(ui->actionXlsx);
 
+    ui->actionDel->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_TrashIcon)));
 
     ui->actionExit->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogCloseButton)));
 
     connect(ui->actionImport,SIGNAL(triggered(bool)),this,SLOT(import()));
     connect(ui->actionExit,SIGNAL(triggered(bool)),QApplication::instance(),SLOT(quit()));
     connect(ui->actionOpen,SIGNAL(triggered(bool)),this,SLOT(open()));
+    connect(ui->actionDel,SIGNAL(triggered(bool)),this,SLOT(del()));
+    connect(ui->actionCalc,SIGNAL(triggered(bool)),this,SLOT(calc()));
 
+    connect(ui->mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(mdiSubActivated(QMdiSubWindow*)));
 }
 
 MainWindow::~MainWindow()
@@ -45,9 +49,20 @@ FormSrcReport *MainWindow::newFormSrcReport(int id_report) const
     FormSrcReport *fe = new FormSrcReport(id_report);
     fe->setAttribute(Qt::WA_DeleteOnClose);
     ui->mdiArea->addSubWindow(fe);
-    //connect(fe,SIGNAL(saveEnableChanged(bool)),this,SLOT(saveEnable(bool)));
     fe->show();
     return fe;
+}
+
+void MainWindow::mdiSubActivated(QMdiSubWindow */*w*/)
+{
+    bool active=false;
+    FormSrcReport *fsr = activeMdiChild();
+    if (fsr){
+        active=true;
+    }
+    ui->actionDel->setEnabled(active);
+    ui->actionCalc->setEnabled(active);
+    ui->actionXlsx->setEnabled(active);
 }
 
 void MainWindow::import()
@@ -75,7 +90,31 @@ void MainWindow::open()
 {
     DialogOpen o;
     if (o.exec()==QDialog::Accepted){
-        FormSrcReport *r = newFormSrcReport(o.id());
-        r->setWindowTitle(o.name());
+        int id=o.id();
+        if (id!=-1){
+            FormSrcReport *r = newFormSrcReport(o.id());
+            r->setWindowTitle(o.name());
+        }
+    }
+}
+
+void MainWindow::del()
+{
+    FormSrcReport *r = activeMdiChild();
+    if (r){
+        int n=QMessageBox::question(this,QString("Подтвердите удаление"),QString("Подтверждаете удаление %1 ?").arg(r->windowTitle()),QMessageBox::Yes,QMessageBox::No);
+        if (n==QMessageBox::Yes){
+            if (r->deleteReport()){
+                ui->mdiArea->closeActiveSubWindow();
+            }
+        }
+    }
+}
+
+void MainWindow::calc()
+{
+    FormSrcReport *c = activeMdiChild();
+    if (c){
+        c->refreshCalc();
     }
 }

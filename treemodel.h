@@ -9,6 +9,7 @@
 #include <QSqlQuery>
 #include <QDebug>
 #include <QSqlRecord>
+#include <QDate>
 
 class TreeItem
 {
@@ -22,6 +23,7 @@ public:
     int childCount() const;
     int columnCount() const;
     QVariant data(int column) const;
+    void setData(int column, QVariant data);
     int row() const;
     TreeItem *parent();
 
@@ -49,6 +51,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
     void refresh(QSqlQuery &query);
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::DisplayRole);
 
 private:
 

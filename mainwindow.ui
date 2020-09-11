@@ -46,6 +46,7 @@
     <addaction name="actionImport"/>
     <addaction name="actionOpen"/>
     <addaction name="actionXlsx"/>
+    <addaction name="actionDel"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_2">
@@ -82,24 +83,33 @@
     <string>Открыть</string>
    </property>
   </action>
-  <action name="actionPrint">
-   <property name="text">
-    <string>Печать</string>
-   </property>
-  </action>
   <action name="actionExit">
    <property name="text">
     <string>Выход</string>
    </property>
   </action>
   <action name="actionCalc">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Расчет</string>
    </property>
   </action>
   <action name="actionXlsx">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Экспорт в xlsx</string>
+   </property>
+  </action>
+  <action name="actionDel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Удалить отчет</string>
    </property>
   </action>
  </widget>

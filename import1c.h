@@ -30,13 +30,15 @@ private:
     QMap <QString, int> nomGroups;
     QMap <QString, int> prods;
     QMap <QString, int> costs;
-    QMap <QString, int> costItems;
 
     int addUnload(QString name, QDate dBeg, QDate dEnd);
     int getIdSubdiv(QString nam);
     int getIdNomGroup(QString nam);
     int getIdProd(QString nam);
-    int getIdCostItem(QString nam);
+    int getIdCostItem(QString nam, int id_nom_group, int id_cost);
+    int addIdCostItem(QString nam, int id_nom_group, int id_cost);
+    bool insertItogo(int id_unload_it, double val);
+    bool costExist(int id_unload_it, int id_cost, int id_type);
     int addNam(QString tablename, QString nam);
     bool refreshMap(QMap <QString, int> *map, QString tablename);
     double toDouble(QString n);
