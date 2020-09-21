@@ -2,7 +2,9 @@
 #define FORMNORM_H
 
 #include <QWidget>
+#include <QComboBox>
 #include "modelro.h"
+#include "db/dbtablemodel.h"
 
 namespace Ui {
 class FormNorm;
@@ -21,10 +23,17 @@ private:
     ModelRo *modelProd;
     ModelRo *modelNomGroup;
     ModelRo *modelCost;
-    ModelRo *modelCostData;
+    DbRelationalModel *modelCostData;
+    DbTableModel *modelNorm;
+    int getId(QComboBox *c, int column=0);
+    int currentIdProd();
+    DbRelation *relIt;
 
 private slots:
     void refreshRels();
+    void refreshProd();
+    void refreshCostData();
+    void refreshNorm();
 };
 
 #endif // FORMNORM_H
