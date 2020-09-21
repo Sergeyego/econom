@@ -27,22 +27,22 @@ private:
     QString beforeTab(QString s);
     QMap <QString, int> costTypes;
     QMap <QString, int> subdivs;
-    QMap <QString, int> nomGroups;
-    QMap <QString, int> prods;
     QMap <QString, int> costs;
 
     int addUnload(QString name, QDate dBeg, QDate dEnd);
     int getIdSubdiv(QString nam);
-    int getIdNomGroup(QString nam);
-    int getIdProd(QString nam);
+    int getIdNomGroup(QString nam, int id_subdiv);
+    int getIdProd(QString nam, int id_nom_gr);
     int getIdCostItem(QString nam, int id_nom_group, int id_cost);
+    int addIdNomGroup(QString nam, int id_subdiv);
+    int addIdProd(QString nam, int id_nom_gr);
     int addIdCostItem(QString nam, int id_nom_group, int id_cost);
     bool insertItogo(int id_unload_it, double val);
     bool costExist(int id_unload_it, int id_cost, int id_type);
     int addNam(QString tablename, QString nam);
     bool refreshMap(QMap <QString, int> *map, QString tablename);
     double toDouble(QString n);
-    int addUnloadItem(int id_unload, int id_subdiv, int id_nom_group, int id_prod, double kvo, double cost_price);
+    int addUnloadItem(int id_unload, int id_prod, double kvo, double cost_price);
     int addUnloadItemCost(int id_unload_it, int id_cost, int id_type, double val);
     int addUnloadItemCostData(int id_unload_item_cost, int id_cost_item, double kvo, double price, double val);
 

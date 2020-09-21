@@ -4,8 +4,6 @@ Import1C::Import1C()
 {
     refreshMap(&costTypes,"econom_cost_type");
     refreshMap(&subdivs,"econom_subdiv");
-    refreshMap(&nomGroups,"econom_nom_group");
-    refreshMap(&prods,"econom_production");
     refreshMap(&costs,"econom_cost");
 }
 
@@ -45,7 +43,7 @@ int Import1C::importFromFile(QString filename)
                         id_subdiv=getIdSubdiv(afterTab(str));
                     } else if (str.contains(QRegExp("^Номенклатурная группа\t(.*)$"))){
                         qDebug()<<"номгр: "<<afterTab(str);
-                        id_nom_gr=getIdNomGroup(afterTab(str));
+                        id_nom_gr=getIdNomGroup(afterTab(str),id_subdiv);
                     } else if (str.contains(QRegExp("^(Услуга|Продукция)\t(.*)$"))){
                         QString prod, kvo, costPrice;
                         str=in.readLine();
@@ -60,10 +58,10 @@ int Import1C::importFromFile(QString filename)
                             costPrice=afterTab(str);
                         }
 
-                        int id_prod=getIdProd(prod);
+                        int id_prod=getIdProd(prod,id_nom_gr);
                         double dkvo=toDouble(kvo);
                         double dcostPrice=toDouble(costPrice);
-                        id_unload_it=addUnloadItem(id,id_subdiv,id_nom_gr,id_prod,dkvo,dcostPrice);
+                        id_unload_it=addUnloadItem(id,id_prod,dkvo,dcostPrice);
 
                         qDebug()<<"прод: "<<id_prod<<" "<<prod<<" kvo= "<<dkvo<<" costPrice= "<<dcostPrice;
                         progress.setLabelText(QString::fromUtf8("Обработка: ")+prod);
@@ -166,31 +164,47 @@ int Import1C::getIdSubdiv(QString nam)
     return id;
 }
 
-int Import1C::getIdNomGroup(QString nam)
+int Import1C::getIdNomGroup(QString nam, int id_subdiv)
 {
     int id=-1;   
-    if (nomGroups.contains(nam)){
-        id=nomGroups.value(nam);
-    } else {
-        id=addNam("econom_nom_group",nam);
-        if (id!=-1){
-            nomGroups.insert(nam,id);
+    QSqlQuery query;
+    query.prepare("select id from econom_nom_group where nam = :nam and id_subdiv = :idsubdiv ");
+    query.bindValue(":nam",nam);
+    query.bindValue(":idsubdiv",id_subdiv);
+    bool ok=query.exec();
+    if (ok){
+        if (query.size()){
+            while(query.next()){
+                id=query.value(0).toInt();
+            }
+        } else {
+            id=addIdNomGroup(nam,id_subdiv);
         }
+    } else {
+        s_err=query.lastError().text();
     }
     return id;
 }
 
 
-int Import1C::getIdProd(QString nam)
+int Import1C::getIdProd(QString nam, int id_nom_gr)
 {
     int id=-1;
-    if (prods.contains(nam)){
-        id=prods.value(nam);
-    } else {
-        id=addNam("econom_production",nam);
-        if (id!=-1){
-            prods.insert(nam,id);
+    QSqlQuery query;
+    query.prepare("select id from econom_production where nam = :nam and id_nom_group = :ng ");
+    query.bindValue(":nam",nam);
+    query.bindValue(":ng",id_nom_gr);
+    bool ok=query.exec();
+    if (ok){
+        if (query.size()){
+            while(query.next()){
+                id=query.value(0).toInt();
+            }
+        } else {
+            id=addIdProd(nam,id_nom_gr);
         }
+    } else {
+        s_err=query.lastError().text();
     }
     return id;
 }
@@ -211,6 +225,40 @@ int Import1C::getIdCostItem(QString nam, int id_nom_group, int id_cost)
             }
         } else {
             id=addIdCostItem(nam,id_nom_group,id_cost);
+        }
+    } else {
+        s_err=query.lastError().text();
+    }
+    return id;
+}
+
+int Import1C::addIdNomGroup(QString nam, int id_subdiv)
+{
+    int id=-1;
+    QSqlQuery query;
+    query.prepare("insert into econom_nom_group (nam, id_subdiv) values (:nam, :idsubdiv) returning id");
+    query.bindValue(":nam",nam);
+    query.bindValue(":ng",id_subdiv);
+    if (query.exec()){
+        while (query.next()){
+            id=query.value(0).toInt();
+        }
+    } else {
+        s_err=query.lastError().text();
+    }
+    return id;
+}
+
+int Import1C::addIdProd(QString nam, int id_nom_gr)
+{
+    int id=-1;
+    QSqlQuery query;
+    query.prepare("insert into econom_production (nam, id_nom_group) values (:nam, :ng) returning id");
+    query.bindValue(":nam",nam);
+    query.bindValue(":ng",id_nom_gr);
+    if (query.exec()){
+        while (query.next()){
+            id=query.value(0).toInt();
         }
     } else {
         s_err=query.lastError().text();
@@ -306,15 +354,13 @@ double Import1C::toDouble(QString n)
     return n.toDouble();
 }
 
-int Import1C::addUnloadItem(int id_unload, int id_subdiv, int id_nom_group, int id_prod, double kvo, double cost_price)
+int Import1C::addUnloadItem(int id_unload, int id_prod, double kvo, double cost_price)
 {
     int id=-1;
     QSqlQuery query;
-    query.prepare("insert into econom_unload_items (id_unload, id_subdiv, id_nom_group, id_prod, kvo, cost_price) "
-                  "values (:id_unload, :id_subdiv, :id_nom_group, :id_prod, :kvo, :cost_price) returning id");
+    query.prepare("insert into econom_unload_items (id_unload, id_prod, kvo, cost_price) "
+                  "values (:id_unload, :id_prod, :kvo, :cost_price) returning id");
     query.bindValue(":id_unload",id_unload);
-    query.bindValue(":id_subdiv",id_subdiv);
-    query.bindValue(":id_nom_group",id_nom_group);
     query.bindValue(":id_prod",id_prod);
     query.bindValue(":kvo",kvo);
     query.bindValue(":cost_price",cost_price);

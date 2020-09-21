@@ -37,7 +37,9 @@ SOURCES += \
     db/dbviewer.cpp \
     dialognewunload.cpp \
     dialogopen.cpp \
-    treemodel.cpp
+    treemodel.cpp \
+    formnorm.cpp \
+    modelro.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -50,14 +52,17 @@ HEADERS += \
     db/dbviewer.h \
     dialognewunload.h \
     dialogopen.h \
-    treemodel.h
+    treemodel.h \
+    formnorm.h \
+    modelro.h
 
 FORMS += \
         mainwindow.ui \
     formsrcreport.ui \
     db/dblogin.ui \
     dialognewunload.ui \
-    dialogopen.ui
+    dialogopen.ui \
+    formnorm.ui
 
 RESOURCES += \
     res.qrc

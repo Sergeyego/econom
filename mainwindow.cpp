@@ -7,6 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    formNorm = new FormNorm;
+
     ui->actionImport->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowRight)));
 
     ui->actionOpen->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
@@ -27,12 +29,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen,SIGNAL(triggered(bool)),this,SLOT(open()));
     connect(ui->actionDel,SIGNAL(triggered(bool)),this,SLOT(del()));
     connect(ui->actionCalc,SIGNAL(triggered(bool)),this,SLOT(calc()));
+    connect(ui->actionNorm,SIGNAL(triggered(bool)),formNorm,SLOT(show()));
 
     connect(ui->mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(mdiSubActivated(QMdiSubWindow*)));
 }
 
 MainWindow::~MainWindow()
 {
+    delete formNorm;
     delete ui;
 }
 

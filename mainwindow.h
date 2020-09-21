@@ -11,6 +11,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QMessageBox>
+#include "formnorm.h"
 
 namespace Ui {
 class MainWindow;
@@ -28,6 +29,7 @@ private:
     Ui::MainWindow *ui;
     FormSrcReport* activeMdiChild() const;
     FormSrcReport* newFormSrcReport(int id_report) const;
+    FormNorm *formNorm;
 
 private slots:
     void mdiSubActivated(QMdiSubWindow *w);
