@@ -32,6 +32,7 @@ FormNorm::FormNorm(QWidget *parent) :
 
     modelNorm->setSort("econom_norm.id_cost_item");
     modelNorm->setDefaultValue(5,1000);
+    modelNorm->setDecimals(4,2);
 
     ui->tableViewNorm->setModel(modelNorm);
     for (int i=0; i<3; i++){
