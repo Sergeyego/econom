@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QSqlQuery>
 #include <QSqlError>
+#include "executor.h"
 
 namespace Ui {
 class FormSrcReport;
@@ -23,12 +24,19 @@ public slots:
     bool deleteReport();
     bool refreshSrc();
     bool refreshCalc();
+    bool recalc();
+    void srcFinished();
+    void repFinished();
 
 private:
     Ui::FormSrcReport *ui;
     int id;
     TreeModel *srcModel;
     TreeModel *calcModel;
+    Executor *exeSrc;
+    Executor *exeRep;
+    Executor *exeCalc;
+    bool existCalc();
 };
 
 #endif // FORMSRCREPORT_H

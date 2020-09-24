@@ -11,9 +11,9 @@
 #include <QMap>
 #include <QStringList>
 #include <QDate>
-#include <QProgressDialog>
 #include <QApplication>
 #include "dialognewunload.h"
+#include "progressreportdialog.h"
 
 class Import1C
 {

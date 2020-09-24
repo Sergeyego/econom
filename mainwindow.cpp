@@ -119,6 +119,6 @@ void MainWindow::calc()
 {
     FormSrcReport *c = activeMdiChild();
     if (c){
-        c->refreshCalc();
+        c->recalc();
     }
 }

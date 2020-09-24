@@ -39,7 +39,9 @@ SOURCES += \
     dialogopen.cpp \
     treemodel.cpp \
     formnorm.cpp \
-    modelro.cpp
+    modelro.cpp \
+    executor.cpp \
+    progressreportdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -54,7 +56,9 @@ HEADERS += \
     dialogopen.h \
     treemodel.h \
     formnorm.h \
-    modelro.h
+    modelro.h \
+    executor.h \
+    progressreportdialog.h
 
 FORMS += \
         mainwindow.ui \
@@ -62,7 +66,8 @@ FORMS += \
     db/dblogin.ui \
     dialognewunload.ui \
     dialogopen.ui \
-    formnorm.ui
+    formnorm.ui \
+    progressreportdialog.ui
 
 RESOURCES += \
     res.qrc

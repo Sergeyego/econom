@@ -13,14 +13,40 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <widget class="QSplitter" name="splitter">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QTreeView" name="treeViewSrc"/>
-     <widget class="QTreeView" name="treeViewCalc"/>
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Исходные данные:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTreeView" name="treeViewSrc"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Расчет:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTreeView" name="treeViewCalc"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>

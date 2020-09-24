@@ -27,14 +27,8 @@ int Import1C::importFromFile(QString filename)
             id=addUnload(d.name(),d.begDate(),d.endDate());
             s_name=d.name();
             if (id!=-1){
-                QProgressDialog progress;
-                progress.setWindowTitle(QString::fromUtf8("Загрузка данных"));
-                progress.setAutoClose(false);
-                progress.setCancelButton(NULL);
-                progress.setMinimumDuration(0);
-                progress.setMaximum(0);
-                progress.setValue(-1);
-                progress.setWindowModality(Qt::WindowModal);
+                ProgressReportDialog progress;
+                progress.show();
 
                 while(!in.atEnd()){
                     QString str=in.readLine();
@@ -64,7 +58,8 @@ int Import1C::importFromFile(QString filename)
                         id_unload_it=addUnloadItem(id,id_prod,dkvo,dcostPrice);
 
                         qDebug()<<"прод: "<<id_prod<<" "<<prod<<" kvo= "<<dkvo<<" costPrice= "<<dcostPrice;
-                        progress.setLabelText(QString::fromUtf8("Обработка: ")+prod);
+
+                        progress.setMessage(QString::fromUtf8("Обработка: ")+prod);
 
                         in.readLine();//пустая строка
                         in.readLine();//шапка таблицы
