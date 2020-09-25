@@ -7,6 +7,10 @@ FormNorm::FormNorm(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    copyIdNomGr=-1;
+    copyIdCost=-1;
+    copyProd=-1;
+
     modelProd = new ModelRo(this);
     ui->tableViewProd->setModel(modelProd);
 
@@ -46,6 +50,8 @@ FormNorm::FormNorm(QWidget *parent) :
     connect(ui->comboBoxCost,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshCostData()));
     connect(ui->comboBoxNomGroup,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshCostData()));
     connect(ui->tableViewProd->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshNorm()));
+    connect(ui->pushButtonCopy,SIGNAL(clicked(bool)),this,SLOT(copy()));
+    connect(ui->pushButtonPaste,SIGNAL(clicked(bool)),this,SLOT(paste()));
 
     refreshRels();
 }
@@ -140,4 +146,35 @@ void FormNorm::refreshNorm()
     modelNorm->setFilter(QString("econom_norm.id_prod = %1 and econom_norm.id_nom_group = %2 and econom_norm.id_cost = %3").arg(id_prod).arg(idng).arg(idcost));
     modelNorm->select();
 
+    ui->pushButtonPaste->setEnabled((copyIdNomGr==idng) && (copyIdCost==idcost) && (copyProd!=id_prod));
+}
+
+void FormNorm::copy()
+{
+    copyIdNomGr=getId(ui->comboBoxNomGroup);
+    copyIdCost=getId(ui->comboBoxCost);
+    copyProd=currentIdProd();
+    ui->pushButtonPaste->setEnabled(false);
+}
+
+void FormNorm::paste()
+{
+    int id_prod=currentIdProd();
+    int idng=getId(ui->comboBoxNomGroup);
+    int idcost=getId(ui->comboBoxCost);
+    if ((copyIdNomGr==idng) && (copyIdCost==idcost) && (copyProd!=id_prod)){
+        QSqlQuery query;
+        query.prepare("insert into econom_norm (id_prod, id_nom_group, id_cost, id_cost_item, norm, kvo) "
+                      "select :prod, id_nom_group, id_cost, id_cost_item, norm, kvo from econom_norm "
+                      "where id_prod = :idprod and id_nom_group = :idng and id_cost = :idcost");
+        query.bindValue(":prod",id_prod);
+        query.bindValue(":idprod",copyProd);
+        query.bindValue(":idng",copyIdNomGr);
+        query.bindValue(":idcost",copyIdCost);
+        if (query.exec()){
+            refreshNorm();
+        } else {
+            QMessageBox::critical(this,QObject::tr("Error"),query.lastError().text(),QMessageBox::Ok);
+        }
+    }
 }

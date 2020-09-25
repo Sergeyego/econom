@@ -2,7 +2,7 @@
 
 ModelRo::ModelRo(QObject *parent) : QSqlQueryModel(parent)
 {
-    dec=1;
+    dec=2;
 }
 
 QVariant ModelRo::data(const QModelIndex &item, int role) const

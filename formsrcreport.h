@@ -7,6 +7,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include "executor.h"
+#include "formcost.h"
 
 namespace Ui {
 class FormSrcReport;
@@ -27,6 +28,7 @@ public slots:
     bool recalc();
     void srcFinished();
     void repFinished();
+    void viewFormCost();
 
 private:
     Ui::FormSrcReport *ui;
@@ -37,6 +39,7 @@ private:
     Executor *exeRep;
     Executor *exeCalc;
     bool existCalc();
+    FormCost *formCost;
 };
 
 #endif // FORMSRCREPORT_H

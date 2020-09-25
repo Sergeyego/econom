@@ -20,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionXlsx->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
     ui->mainToolBar->addAction(ui->actionXlsx);
 
+    ui->actionCost->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_FileDialogDetailedView)));
+    ui->mainToolBar->addAction(ui->actionCost);
+
     ui->actionDel->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_TrashIcon)));
 
     ui->actionExit->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogCloseButton)));
@@ -30,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDel,SIGNAL(triggered(bool)),this,SLOT(del()));
     connect(ui->actionCalc,SIGNAL(triggered(bool)),this,SLOT(calc()));
     connect(ui->actionNorm,SIGNAL(triggered(bool)),formNorm,SLOT(show()));
+    connect(ui->actionCost,SIGNAL(triggered(bool)),this,SLOT(cost()));
 
     connect(ui->mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(mdiSubActivated(QMdiSubWindow*)));
 }
@@ -67,6 +71,7 @@ void MainWindow::mdiSubActivated(QMdiSubWindow */*w*/)
     ui->actionDel->setEnabled(active);
     ui->actionCalc->setEnabled(active);
     ui->actionXlsx->setEnabled(active);
+    ui->actionCost->setEnabled(active);
 }
 
 void MainWindow::import()
@@ -120,5 +125,13 @@ void MainWindow::calc()
     FormSrcReport *c = activeMdiChild();
     if (c){
         c->recalc();
+    }
+}
+
+void MainWindow::cost()
+{
+    FormSrcReport *r = activeMdiChild();
+    if (r){
+        r->viewFormCost();
     }
 }

@@ -54,6 +54,7 @@
      <string>Инструменты</string>
     </property>
     <addaction name="actionCalc"/>
+    <addaction name="actionCost"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -122,6 +123,14 @@
   <action name="actionNorm">
    <property name="text">
     <string>Нормы расхода</string>
+   </property>
+  </action>
+  <action name="actionCost">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Просмотр затрат</string>
    </property>
   </action>
  </widget>

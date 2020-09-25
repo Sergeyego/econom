@@ -28,12 +28,17 @@ private:
     int getId(QComboBox *c, int column=0);
     int currentIdProd();
     DbRelation *relIt;
+    int copyIdNomGr;
+    int copyIdCost;
+    int copyProd;
 
 private slots:
     void refreshRels();
     void refreshProd();
     void refreshCostData();
     void refreshNorm();
+    void copy();
+    void paste();
 };
 
 #endif // FORMNORM_H

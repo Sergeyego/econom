@@ -7,6 +7,9 @@ FormSrcReport::FormSrcReport(int id_report, QWidget *parent) :
 {
     ui->setupUi(this);
     id=id_report;
+
+    formCost = new FormCost(id);
+
     srcModel = new TreeModel(this);
     ui->treeViewSrc->setModel(srcModel);
     exeSrc = new Executor(QString::fromUtf8("Загрузка исходных данных"),srcModel,this);
@@ -32,6 +35,7 @@ FormSrcReport::FormSrcReport(int id_report, QWidget *parent) :
 
 FormSrcReport::~FormSrcReport()
 {
+    delete formCost;
     delete ui;
 }
 
@@ -94,6 +98,12 @@ void FormSrcReport::repFinished()
         calcModel->setHeaderData(5,Qt::Horizontal,QString("Сумма"),Qt::DisplayRole);
         ui->treeViewCalc->resizeColumnToContents(0);
     }
+}
+
+void FormSrcReport::viewFormCost()
+{
+    formCost->setWindowTitle(QString::fromUtf8("Затраты: ")+this->windowTitle());
+    formCost->show();
 }
 
 bool FormSrcReport::existCalc()

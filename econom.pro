@@ -41,7 +41,8 @@ SOURCES += \
     formnorm.cpp \
     modelro.cpp \
     executor.cpp \
-    progressreportdialog.cpp
+    progressreportdialog.cpp \
+    formcost.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -58,7 +59,8 @@ HEADERS += \
     formnorm.h \
     modelro.h \
     executor.h \
-    progressreportdialog.h
+    progressreportdialog.h \
+    formcost.h
 
 FORMS += \
         mainwindow.ui \
@@ -67,7 +69,8 @@ FORMS += \
     dialognewunload.ui \
     dialogopen.ui \
     formnorm.ui \
-    progressreportdialog.ui
+    progressreportdialog.ui \
+    formcost.ui
 
 RESOURCES += \
     res.qrc

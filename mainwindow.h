@@ -37,6 +37,7 @@ private slots:
     void open();
     void del();
     void calc();
+    void cost();
 };
 
 #endif // MAINWINDOW_H
