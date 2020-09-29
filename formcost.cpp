@@ -8,6 +8,8 @@ FormCost::FormCost(int id_unload, QWidget *parent) :
     ui->setupUi(this);
     id=id_unload;
 
+    ui->pushButtonSave->setIcon(QIcon(QApplication::style()->standardIcon(QStyle::SP_DialogSaveButton)));
+
     modelNomGr = new ModelRo(this);
     ui->comboBoxNomGr->setModel(modelNomGr);
 
@@ -21,6 +23,7 @@ FormCost::FormCost(int id_unload, QWidget *parent) :
 
     connect(ui->comboBoxNomGr,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshInfo()));
     connect(ui->comboBoxCost,SIGNAL(currentIndexChanged(int)),this,SLOT(refreshInfo()));
+    connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(saveXlsx()));
 
     refreshInfo();
 }
@@ -86,4 +89,10 @@ void FormCost::refreshInfo()
         modelInfo->setHeaderData(3,Qt::Horizontal,QString::fromUtf8("Стоим."));
         ui->tableViewCost->resizeColumnsToContents();
     }
+}
+
+void FormCost::saveXlsx()
+{
+    DbXlsx d(ui->tableViewCost,ui->comboBoxNomGr->currentText()+". "+ui->comboBoxCost->currentText());
+    d.saveToFile();
 }

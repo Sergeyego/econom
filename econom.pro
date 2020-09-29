@@ -13,6 +13,8 @@ TEMPLATE = app
 
 RC_FILE = ico.rc
 
+include(xlsx/qtxlsx.pri)
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -42,7 +44,10 @@ SOURCES += \
     modelro.cpp \
     executor.cpp \
     progressreportdialog.cpp \
-    formcost.cpp
+    formcost.cpp \
+    db/dbxlsx.cpp \
+    dialogexportconf.cpp \
+    formexportitem.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -60,7 +65,10 @@ HEADERS += \
     modelro.h \
     executor.h \
     progressreportdialog.h \
-    formcost.h
+    formcost.h \
+    db/dbxlsx.h \
+    dialogexportconf.h \
+    formexportitem.h
 
 FORMS += \
         mainwindow.ui \
@@ -70,7 +78,9 @@ FORMS += \
     dialogopen.ui \
     formnorm.ui \
     progressreportdialog.ui \
-    formcost.ui
+    formcost.ui \
+    dialogexportconf.ui \
+    formexportitem.ui
 
 RESOURCES += \
     res.qrc

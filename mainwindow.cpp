@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionCalc,SIGNAL(triggered(bool)),this,SLOT(calc()));
     connect(ui->actionNorm,SIGNAL(triggered(bool)),formNorm,SLOT(show()));
     connect(ui->actionCost,SIGNAL(triggered(bool)),this,SLOT(cost()));
+    connect(ui->actionXlsx,SIGNAL(triggered(bool)),this,SLOT(exportxlsx()));
 
     connect(ui->mdiArea,SIGNAL(subWindowActivated(QMdiSubWindow*)),this,SLOT(mdiSubActivated(QMdiSubWindow*)));
 }
@@ -133,5 +134,13 @@ void MainWindow::cost()
     FormSrcReport *r = activeMdiChild();
     if (r){
         r->viewFormCost();
+    }
+}
+
+void MainWindow::exportxlsx()
+{
+    FormSrcReport *r = activeMdiChild();
+    if (r){
+        r->exportXlsx();
     }
 }

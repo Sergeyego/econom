@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QSqlQuery>
 #include "modelro.h"
+#include "db/dbxlsx.h"
 
 namespace Ui {
 class FormCost;
@@ -29,6 +30,7 @@ private:
 private slots:
     void refreshRel();
     void refreshInfo();
+    void saveXlsx();
 };
 
 #endif // FORMCOST_H

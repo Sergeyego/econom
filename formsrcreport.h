@@ -8,6 +8,8 @@
 #include <QSqlError>
 #include "executor.h"
 #include "formcost.h"
+#include "db/dbxlsx.h"
+#include "dialogexportconf.h"
 
 namespace Ui {
 class FormSrcReport;
@@ -29,6 +31,7 @@ public slots:
     void srcFinished();
     void repFinished();
     void viewFormCost();
+    void exportXlsx();
 
 private:
     Ui::FormSrcReport *ui;
