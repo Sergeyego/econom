@@ -15,9 +15,14 @@ class FormExportItem : public QWidget
 public:
     explicit FormExportItem(QModelIndex root, QWidget *parent = 0);
     ~FormExportItem();
+    bool isEnabled();
+    QString onlyProd();
 
 private:
     Ui::FormExportItem *ui;
+
+private slots:
+    void refreshState();
 };
 
 #endif // FORMEXPORTITEM_H

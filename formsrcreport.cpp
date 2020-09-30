@@ -133,8 +133,6 @@ void FormSrcReport::exportXlsx()
     titleFont.setBold(true);
     strHeaderFont.setBold(true);
 
-    bool shortView=true;
-
     Format strFormat;
     strFormat.setBorderStyle(Format::BorderThin);
     strFormat.setFont(defaultFont);
@@ -176,6 +174,14 @@ void FormSrcReport::exportXlsx()
     for (int i=0; i<calcModel->rowCount(); i++){//подразделение
         QModelIndex ind=calcModel->index(i,0);
         QModelIndex indval=calcModel->index(i,5);
+        bool existel=false;
+        for (int p=0; p<calcModel->rowCount(ind); p++){
+            QModelIndex inde=calcModel->index(p,0,ind);
+            existel=existel || d.isEnabled(inde);
+        }
+        if (!existel){
+            continue;
+        }
         n++;
         n++;
         int startp=n+1;
@@ -190,6 +196,9 @@ void FormSrcReport::exportXlsx()
         for (int j=0; j<calcModel->rowCount(ind); j++){//номенклатурная группа
             QModelIndex ind1=calcModel->index(j,0,ind);
             QModelIndex indval1=calcModel->index(j,5,ind);
+            if (!d.isEnabled(ind1)){
+                continue;
+            }
             n++;
             n++;
             int startng=n+1;
@@ -206,6 +215,9 @@ void FormSrcReport::exportXlsx()
                 QModelIndex indval2=calcModel->index(k,5,ind1);
                 QModelIndex indkvo2=calcModel->index(k,1,ind1);
                 QModelIndex indcost2=calcModel->index(k,2,ind1);
+                if (!d.onlyProd(ind1).isEmpty() && d.onlyProd(ind1)!=calcModel->data(ind2,Qt::EditRole).toString()){
+                    continue;
+                }
                 n++;
                 n++;
                 int startprod=n+1;
@@ -270,7 +282,7 @@ void FormSrcReport::exportXlsx()
                             ws->writeNumeric(n,4,calcModel->data(indprice5,Qt::EditRole).toDouble(),numFormat);
                             ws->writeNumeric(n,5,calcModel->data(indval5,Qt::EditRole).toDouble(),numFormat);
                         }
-                        ws->groupRows(startst,n,shortView);
+                        ws->groupRows(startst,n,d.shortView());
                     }
                     ws->groupRows(startgr,n,false);
                 }

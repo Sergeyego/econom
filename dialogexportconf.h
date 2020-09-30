@@ -16,10 +16,13 @@ class DialogExportConf : public QDialog
 public:
     explicit DialogExportConf(TreeModel *m, QWidget *parent = 0);
     ~DialogExportConf();
+    bool isEnabled(QModelIndex ind);
+    QString onlyProd(QModelIndex ind);
+    bool shortView();
 
 private:
     Ui::DialogExportConf *ui;
-    QVector<FormExportItem *> items;
+    QMap<QModelIndex, FormExportItem *> items;
 };
 
 #endif // DIALOGEXPORTCONF_H
