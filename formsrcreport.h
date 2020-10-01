@@ -8,12 +8,14 @@
 #include <QSqlError>
 #include "executor.h"
 #include "formcost.h"
-#include "db/dbxlsx.h"
+#include "xlsx/xlsxdocument.h"
 #include "dialogexportconf.h"
 
 namespace Ui {
 class FormSrcReport;
 }
+
+using namespace QXlsx;
 
 class FormSrcReport : public QWidget
 {

@@ -52,6 +52,7 @@ FormNorm::FormNorm(QWidget *parent) :
     connect(ui->tableViewProd->selectionModel(),SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this,SLOT(refreshNorm()));
     connect(ui->pushButtonCopy,SIGNAL(clicked(bool)),this,SLOT(copy()));
     connect(ui->pushButtonPaste,SIGNAL(clicked(bool)),this,SLOT(paste()));
+    connect(ui->pushButtonSave,SIGNAL(clicked(bool)),this,SLOT(save()));
 
     refreshRels();
 }
@@ -81,6 +82,16 @@ int FormNorm::currentIdProd()
         id=ui->tableViewProd->model()->data(indProd,Qt::EditRole).toInt();
     }
     return id;
+}
+
+QString FormNorm::currentProd()
+{
+    QString prod;
+    QModelIndex indProd=ui->tableViewProd->model()->index(ui->tableViewProd->currentIndex().row(),1);
+    if (indProd.isValid()){
+        prod=ui->tableViewProd->model()->data(indProd,Qt::EditRole).toString();
+    }
+    return prod;
 }
 
 void FormNorm::refreshRels()
@@ -177,4 +188,104 @@ void FormNorm::paste()
             QMessageBox::critical(this,QObject::tr("Error"),query.lastError().text(),QMessageBox::Ok);
         }
     }
+}
+
+void FormNorm::save()
+{
+    QSqlQuery query;
+    query.prepare("select ec.nam, eci.nam, en.norm from econom_norm en "
+                  "inner join econom_nom_group eng on eng.id=en.id_nom_group "
+                  "inner join econom_cost ec on ec.id=en.id_cost "
+                  "inner join econom_cost_item eci on eci.id = en.id_cost_item "
+                  "where en.id_prod= :id_prod and en.id_nom_group= :id_ng "
+                  "order by en.id_cost_item, eci.nam ");
+    query.bindValue(":id_prod",currentIdProd());
+    query.bindValue(":id_ng",getId(ui->comboBoxNomGroup));
+    if (query.exec()){
+        Document xlsx;
+        Worksheet *ws=xlsx.currentWorksheet();
+        XlsxPageSetup pageSetup;
+        pageSetup.fitToPage=true;
+        pageSetup.fitToWidth=1;
+        pageSetup.fitToHeight=0;
+        pageSetup.orientation=XlsxPageSetup::portrait;
+        ws->setPageSetup(pageSetup);
+
+        XlsxPageMargins margins=ws->pageMargins();
+        margins.bottom=0.817361111111111;
+        ws->setPageMargins(margins);
+
+        QFont defaultFont("Arial", 10);
+        QFont strHeaderFont("Arial", 10);
+        QFont headerFont("Arial", 10);
+        QFont titleFont("Arial", 12);
+        titleFont.setBold(true);
+        strHeaderFont.setBold(true);
+
+        Format strFormat;
+        strFormat.setBorderStyle(Format::BorderThin);
+        strFormat.setFont(defaultFont);
+
+        Format strHeaderFormat;
+        strHeaderFormat.setBorderStyle(Format::BorderThin);
+        strHeaderFormat.setFont(strHeaderFont);
+
+        Format numFormat;
+        numFormat.setBorderStyle(Format::BorderThin);
+        numFormat.setFont(defaultFont);
+        QString fmt=QString("#,##0.%1").arg((0),2,'d',0,QChar('0'));
+        numFormat.setNumberFormat(fmt);
+        Format titleFormat;
+        titleFormat.setBorderStyle(Format::BorderNone);
+        titleFormat.setFont(titleFont);
+        titleFormat.setTextWarp(true);
+        titleFormat.setHorizontalAlignment(Format::AlignHCenter);
+        titleFormat.setVerticalAlignment(Format::AlignVCenter);
+
+        Format headerFormat;
+        headerFormat.setBorderStyle(Format::BorderThin);
+        headerFormat.setFont(headerFont);
+        headerFormat.setTextWarp(true);
+        headerFormat.setHorizontalAlignment(Format::AlignLeft);
+        headerFormat.setVerticalAlignment(Format::AlignVCenter);
+
+        ws->setColumnWidth(1,1,60);
+        ws->setColumnWidth(2,2,11);
+
+        QString title=QString::fromUtf8("Нормы расхода на производство 1 тонны ")+currentProd();
+        int n=1;
+        ws->mergeCells(CellRange(n,1,n,2));
+        ws->writeString(n,1,title,titleFormat);
+        n++;
+
+        QString cost_old;
+
+        while (query.next()){
+            QString cost=query.value(0).toString();
+            if (cost!=cost_old){
+                n++;
+                ws->mergeCells(CellRange(n,1,n,2));
+                ws->writeString(n,1,cost,titleFormat);
+                n++;
+                ws->writeString(n,1,QString::fromUtf8("Наименование"),strHeaderFormat);
+                ws->writeString(n,2,QString::fromUtf8("Норма"),strHeaderFormat);
+            }
+            cost_old=cost;
+            n++;
+            ws->writeString(n,1,query.value(1).toString(),strFormat);
+            ws->writeNumeric(n,2,query.value(2).toDouble(),numFormat);
+        }
+
+        QDir dir(QDir::homePath());
+        QString fnam=title.replace(QRegExp("[^\\w]"), "_");
+        QString filename = QFileDialog::getSaveFileName(nullptr,QString::fromUtf8("Сохранить файл"),
+                                                        dir.path()+"/"+fnam+".xlsx",
+                                                        QString::fromUtf8("Documents (*.xlsx)") );
+        if (!filename.isEmpty()){
+            xlsx.saveAs(filename);
+        }
+    } else {
+        QMessageBox::critical(this,QObject::tr("Error"),query.lastError().text(),QMessageBox::Ok);
+    }
+
 }

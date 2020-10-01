@@ -3,12 +3,16 @@
 
 #include <QWidget>
 #include <QComboBox>
+#include <QFileDialog>
 #include "modelro.h"
 #include "db/dbtablemodel.h"
+#include "xlsx/xlsxdocument.h"
 
 namespace Ui {
 class FormNorm;
 }
+
+using namespace QXlsx;
 
 class FormNorm : public QWidget
 {
@@ -31,6 +35,7 @@ private:
     int copyIdNomGr;
     int copyIdCost;
     int copyProd;
+    QString currentProd();
 
 private slots:
     void refreshRels();
@@ -39,6 +44,7 @@ private slots:
     void refreshNorm();
     void copy();
     void paste();
+    void save();
 };
 
 #endif // FORMNORM_H
