@@ -3,6 +3,7 @@
 Import1C::Import1C()
 {
     refreshMap(&costTypes,"econom_cost_type");
+    refreshMap(&costVid,"econom_cost_vid");
     refreshMap(&subdivs,"econom_subdiv");
     refreshMap(&costs,"econom_cost");
 }
@@ -16,6 +17,8 @@ int Import1C::importFromFile(QString filename)
     int id_type=-1;
     int id_cost=-1;
     int id_unload_it_cost=-1;
+    int id_prod=-1;
+    mvids.clear();
     s_name.clear();
     QFile file(filename);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
@@ -52,7 +55,7 @@ int Import1C::importFromFile(QString filename)
                             costPrice=afterTab(str);
                         }
 
-                        int id_prod=getIdProd(prod,id_nom_gr);
+                        id_prod=getIdProd(prod,id_nom_gr);
                         double dkvo=toDouble(kvo);
                         double dcostPrice=toDouble(costPrice);
                         id_unload_it=addUnloadItem(id,id_prod,dkvo,dcostPrice);
@@ -65,12 +68,22 @@ int Import1C::importFromFile(QString filename)
                         in.readLine();//шапка таблицы
                         in.readLine();//пустая строка
                         in.readLine();//пустая строка
+                        in.readLine();//пустая строка
+                        in.readLine();//пустая строка
+                        in.readLine();//итог
                     } else {
                         QStringList list=str.split("\t");
                         if (list.size()==4){
+                            vids v;
+                            v.id_prod=id_prod;
+                            v.id_type=id_type;
+                            v.vid=list.at(0);
                             if (costTypes.contains(list.at(0))){
                                 qDebug()<<list<<" id="<<costTypes.value(list.at(0));
                                 id_type=costTypes.value(list.at(0));
+                            } else if (costVid.contains(list.at(0)) && !mvids.contains(v)){
+                                qDebug()<<"vid:"<<list.at(0);
+                                mvids.push_back(v);
                             } else if (QString(list.at(1)).isEmpty() && QString(list.at(2)).isEmpty() && costs.contains(list.at(0))){
                                 qDebug()<<"ст. звтрат: "<<list;
                                 id_cost=costs.value(list.at(0));

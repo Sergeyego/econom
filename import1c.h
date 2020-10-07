@@ -15,6 +15,17 @@
 #include "dialognewunload.h"
 #include "progressreportdialog.h"
 
+struct vids
+{
+    QString vid;
+    int id_type;
+    int id_prod;
+
+    bool operator == (const vids& other) const {
+        return vid==other.vid && id_type==other.id_type && id_prod==other.id_prod;
+    }
+};
+
 class Import1C
 {
 public:
@@ -26,8 +37,10 @@ private:
     QString afterTab(QString s);
     QString beforeTab(QString s);
     QMap <QString, int> costTypes;
+    QMap <QString, int> costVid;
     QMap <QString, int> subdivs;
     QMap <QString, int> costs;
+    QVector <vids> mvids;
 
     int addUnload(QString name, QDate dBeg, QDate dEnd);
     int getIdSubdiv(QString nam);
